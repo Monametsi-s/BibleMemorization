@@ -4,13 +4,7 @@
     "slug": "bible-memorisation",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#6366f1"
-    },
     "assetBundlePatterns": [
       "**/*"
     ],
@@ -19,15 +13,11 @@
       "bundleIdentifier": "com.scripturemastery.app"
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#6366f1"
-      },
       "package": "com.scripturemastery.app",
-      "permissions": []
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
+      "permissions": [],
+      "adaptiveIcon": {
+        "backgroundColor": "#6366f1"
+      }
     },
     "plugins": [
       "expo-sqlite"
