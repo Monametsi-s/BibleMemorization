@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import romansData from '../data/romansNKJV.json';
 
 const db = SQLite.openDatabaseSync('scripture_mastery.db');
 
@@ -93,6 +94,25 @@ export const initDatabase = () => {
         'INSERT INTO achievements (name, description, icon, requirement) VALUES (?, ?, ?, ?)',
         [ach.name, ach.description, ach.icon, ach.requirement]
       );
+    });
+  }
+
+  // Seed Romans verses from JSON data
+  const versesCount = db.getFirstSync('SELECT COUNT(*) as count FROM verses WHERE book = ?', ['Romans']);
+  if (versesCount.count === 0) {
+    romansData.chapters.forEach(chapter => {
+      chapter.verses.forEach(verse => {
+        const result = db.runSync(
+          'INSERT INTO verses (book, chapter, verse_number, text, translation) VALUES (?, ?, ?, ?, ?)',
+          [romansData.book, chapter.chapter, verse.verse, verse.text, romansData.translation]
+        );
+
+        // Add to user_verses for tracking
+        db.runSync(
+          'INSERT INTO user_verses (verse_id, next_review) VALUES (?, datetime("now"))',
+          [result.lastInsertRowId]
+        );
+      });
     });
   }
 };
