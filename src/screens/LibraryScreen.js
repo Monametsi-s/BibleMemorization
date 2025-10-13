@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal } from 'react-native';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, TextInput, Modal, Animated, ActivityIndicator } from 'react-native';
 import { Card, Button, FAB, Chip } from 'react-native-paper';
 import { getAllVerses, addVerse } from '../services/database';
 import { useApp } from '../context/AppContext';
@@ -11,6 +11,7 @@ const LibraryScreen = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedBook, setSelectedBook] = useState('All');
   const [modalVisible, setModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [newVerse, setNewVerse] = useState({
     book: 'Romans',
     chapter: '',
@@ -26,9 +27,16 @@ const LibraryScreen = () => {
     filterVerses();
   }, [searchQuery, selectedBook, verses]);
 
-  const loadVerses = () => {
-    const allVerses = getAllVerses();
-    setVerses(allVerses);
+  const loadVerses = async () => {
+    setLoading(true);
+    try {
+      const allVerses = getAllVerses();
+      setVerses(allVerses);
+    } catch (error) {
+      console.error('Error loading verses:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filterVerses = () => {
@@ -75,28 +83,53 @@ const LibraryScreen = () => {
     }
   };
 
-  const renderVerse = ({ item }) => (
-    <Card style={styles.verseCard}>
-      <Card.Content>
-        <View style={styles.verseHeader}>
-          <Text style={styles.reference}>
-            {item.book} {item.chapter}:{item.verse_number}
-          </Text>
-          <Chip
-            style={[styles.masteryChip, { backgroundColor: getMasteryColor(item.mastery_level) }]}
-            textStyle={styles.masteryText}
-          >
-            {getMasteryLabel(item.mastery_level)}
-          </Chip>
-        </View>
-        <Text style={styles.verseText}>{item.text}</Text>
-        <View style={styles.verseFooter}>
-          <Text style={styles.translation}>{item.translation}</Text>
-          <Text style={styles.practiced}>Practiced {item.times_practiced}x</Text>
-        </View>
-      </Card.Content>
-    </Card>
-  );
+  const renderVerse = ({ item, index }) => {
+    const animatedValue = new Animated.Value(0);
+    
+    Animated.timing(animatedValue, {
+      toValue: 1,
+      duration: 300,
+      delay: index * 50,
+      useNativeDriver: true,
+    }).start();
+
+    return (
+      <Animated.View
+        style={{
+          opacity: animatedValue,
+          transform: [
+            {
+              translateY: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [20, 0],
+              }),
+            },
+          ],
+        }}
+      >
+        <Card style={styles.verseCard}>
+          <Card.Content>
+            <View style={styles.verseHeader}>
+              <Text style={styles.reference}>
+                {item.book} {item.chapter}:{item.verse_number}
+              </Text>
+              <Chip
+                style={[styles.masteryChip, { backgroundColor: getMasteryColor(item.mastery_level) }]}
+                textStyle={styles.masteryText}
+              >
+                {getMasteryLabel(item.mastery_level)}
+              </Chip>
+            </View>
+            <Text style={styles.verseText} numberOfLines={3}>{item.text}</Text>
+            <View style={styles.verseFooter}>
+              <Text style={styles.translation}>{item.translation}</Text>
+              <Text style={styles.practiced}>Practiced {item.times_practiced}x</Text>
+            </View>
+          </Card.Content>
+        </Card>
+      </Animated.View>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -128,18 +161,30 @@ const LibraryScreen = () => {
       />
 
       {/* Verses List */}
-      <FlatList
-        data={filteredVerses}
-        keyExtractor={(item) => item.id.toString()}
-        renderItem={renderVerse}
-        contentContainerStyle={styles.list}
-        ListEmptyComponent={
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No verses yet!</Text>
-            <Text style={styles.emptySubtext}>Tap the + button to add your first verse</Text>
-          </View>
-        }
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#6366f1" />
+          <Text style={styles.loadingText}>Loading verses...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredVerses}
+          keyExtractor={(item) => item.id.toString()}
+          renderItem={renderVerse}
+          contentContainerStyle={styles.list}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyIcon}>📖</Text>
+              <Text style={styles.emptyText}>No verses found</Text>
+              <Text style={styles.emptySubtext}>
+                {searchQuery || selectedBook !== 'All'
+                  ? 'Try adjusting your filters'
+                  : 'Tap the + button to add your first verse'}
+              </Text>
+            </View>
+          }
+        />
+      )}
 
       {/* Add Verse FAB */}
       <FAB
@@ -286,19 +331,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
   emptyContainer: {
     alignItems: 'center',
-    marginTop: 64,
+    justifyContent: 'center',
+    marginTop: 80,
+    paddingHorizontal: 32,
+  },
+  emptyIcon: {
+    fontSize: 64,
+    marginBottom: 16,
+    opacity: 0.5,
   },
   emptyText: {
     fontSize: 20,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 8,
+    textAlign: 'center',
   },
   emptySubtext: {
     fontSize: 14,
     color: '#666',
+    textAlign: 'center',
+    lineHeight: 20,
   },
   fab: {
     position: 'absolute',

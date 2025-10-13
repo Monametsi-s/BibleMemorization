@@ -1,16 +1,43 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { Card, Button, ProgressBar } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useApp } from '../context/AppContext';
+import { getVersesDueForReview } from '../services/database';
+import { getAdaptiveGameRecommendation } from '../services/memoryHealthService';
 
 const HomeScreen = ({ navigation }) => {
-  const { userProgress, statistics, loading } = useApp();
+  const { userProgress, statistics, loading, refreshData } = useApp();
+  const [recommendedGame, setRecommendedGame] = useState(null);
+  const [dueVerses, setDueVerses] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = () => {
+    const verses = getVersesDueForReview();
+    setDueVerses(verses);
+
+    if (verses.length > 0) {
+      const recommendation = getAdaptiveGameRecommendation(verses[0]);
+      setRecommendedGame(recommendation);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await refreshData();
+    loadData();
+    setRefreshing(false);
+  };
 
   if (loading || !userProgress || !statistics) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#6366f1" />
+        <Text style={styles.loadingText}>Loading your progress...</Text>
       </View>
     );
   }
@@ -18,8 +45,25 @@ const HomeScreen = ({ navigation }) => {
   const xpToNextLevel = (userProgress.level * 100) - userProgress.total_xp;
   const xpProgress = (userProgress.total_xp % 100) / 100;
 
+  const getGameInfo = (gameName) => {
+    const gameMap = {
+      'TapToReveal': { name: 'Tap to Reveal', icon: '👆', color: ['#6366f1', '#8b5cf6'] },
+      'ListenGame': { name: 'Listen', icon: '🔊', color: ['#8b5cf6', '#ec4899'] },
+      'ReorderGame': { name: 'Reorder Words', icon: '🔄', color: ['#ec4899', '#f43f5e'] },
+      'TypeFirstLetter': { name: 'Type First Letter', icon: '⌨️', color: ['#6366f1', '#8b5cf6'] },
+      'WordBank': { name: 'Word Bank', icon: '📝', color: ['#f43f5e', '#fb923c'] },
+      'SpeakOut': { name: 'Speak Out', icon: '🎤', color: ['#14b8a6', '#06b6d4'] },
+    };
+    return gameMap[gameName] || { name: gameName, icon: '🎯', color: ['#6366f1', '#8b5cf6'] };
+  };
+
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView 
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#6366f1']} />
+      }
+    >
       {/* Header with Level and Streak */}
       <LinearGradient
         colors={['#6366f1', '#8b5cf6']}
@@ -50,6 +94,40 @@ const HomeScreen = ({ navigation }) => {
         </View>
       </LinearGradient>
 
+      {/* Recommended Game Card */}
+      {recommendedGame && dueVerses.length > 0 && (
+        <Card style={styles.recommendedCard}>
+          <LinearGradient
+            colors={getGameInfo(recommendedGame.primaryGame).color}
+            style={styles.recommendedGradient}
+          >
+            <TouchableOpacity
+              onPress={() => {
+                const gameInfo = getGameInfo(recommendedGame.primaryGame);
+                navigation.navigate(recommendedGame.primaryGame, {
+                  verse: dueVerses[0],
+                  verses: dueVerses,
+                });
+              }}
+              style={styles.recommendedButton}
+            >
+              <View style={styles.recommendedBadge}>
+                <Text style={styles.recommendedBadgeText}>RECOMMENDED FOR YOU</Text>
+              </View>
+              <Text style={styles.recommendedIcon}>
+                {getGameInfo(recommendedGame.primaryGame).icon}
+              </Text>
+              <Text style={styles.recommendedTitle}>
+                {getGameInfo(recommendedGame.primaryGame).name}
+              </Text>
+              <Text style={styles.recommendedSubtitle}>
+                {recommendedGame.phase} Phase • {dueVerses.length} verses ready
+              </Text>
+            </TouchableOpacity>
+          </LinearGradient>
+        </Card>
+      )}
+
       {/* Daily Practice Button */}
       <Card style={styles.practiceCard}>
         <LinearGradient
@@ -61,8 +139,8 @@ const HomeScreen = ({ navigation }) => {
             style={styles.practiceButton}
           >
             <Text style={styles.practiceIcon}>📖</Text>
-            <Text style={styles.practiceTitle}>Start Daily Practice</Text>
-            <Text style={styles.practiceSubtitle}>10 verses ready to review</Text>
+            <Text style={styles.practiceTitle}>Choose a Game</Text>
+            <Text style={styles.practiceSubtitle}>{dueVerses.length} verses ready to review</Text>
           </TouchableOpacity>
         </LinearGradient>
       </Card>
@@ -153,6 +231,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
   header: {
     padding: 24,
@@ -218,7 +302,11 @@ const styles = StyleSheet.create({
     margin: 16,
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 4,
+    elevation: 6,
+    shadowColor: '#10b981',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   practiceGradient: {
     padding: 24,
@@ -251,7 +339,11 @@ const styles = StyleSheet.create({
     width: '48%',
     marginBottom: 16,
     borderRadius: 12,
-    elevation: 2,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   statValue: {
     fontSize: 32,
@@ -277,7 +369,13 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     flex: 1,
     marginHorizontal: 4,
-    elevation: 2,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    minHeight: 100,
+    justifyContent: 'center',
   },
   actionIcon: {
     fontSize: 32,
@@ -313,6 +411,51 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     textAlign: 'center',
+  },
+  recommendedCard: {
+    margin: 16,
+    marginTop: 24,
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.4,
+    shadowRadius: 12,
+  },
+  recommendedGradient: {
+    padding: 24,
+  },
+  recommendedButton: {
+    alignItems: 'center',
+  },
+  recommendedBadge: {
+    backgroundColor: 'rgba(255,255,255,0.3)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  recommendedBadgeText: {
+    fontSize: 11,
+    fontWeight: 'bold',
+    color: '#fff',
+    letterSpacing: 1,
+  },
+  recommendedIcon: {
+    fontSize: 56,
+    marginBottom: 12,
+  },
+  recommendedTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+    marginBottom: 6,
+  },
+  recommendedSubtitle: {
+    fontSize: 14,
+    color: '#fff',
+    opacity: 0.95,
   },
 });
 

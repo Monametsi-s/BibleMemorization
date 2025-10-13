@@ -1,22 +1,34 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { Card, ProgressBar } from 'react-native-paper';
 import { useApp } from '../context/AppContext';
+import { getOverallMemoryHealth, trackPracticePattern } from '../services/memoryHealthService';
 
 const { width } = Dimensions.get('window');
 
 const ProgressScreen = () => {
   const { userProgress, statistics } = useApp();
 
+  const memoryHealth = getOverallMemoryHealth();
+  const practicePattern = trackPracticePattern();
+
   if (!userProgress || !statistics) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#6366f1" />
+        <Text style={styles.loadingText}>Loading your progress...</Text>
       </View>
     );
   }
 
   const xpProgress = (userProgress.total_xp % 100) / 100;
+
+  const getHealthColor = (score) => {
+    if (score >= 80) return '#10b981';
+    if (score >= 60) return '#eab308';
+    if (score >= 40) return '#f59e0b';
+    return '#ef4444';
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -96,6 +108,71 @@ const ProgressScreen = () => {
                 ? Math.round((statistics.masteredVerses / statistics.totalVerses) * 100)
                 : 0}% Complete
             </Text>
+          </View>
+        </Card.Content>
+      </Card>
+
+      {/* Memory Health Card */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style={styles.cardTitle}>Memory Health</Text>
+          <View style={styles.memoryHealthContainer}>
+            <View style={styles.healthScoreContainer}>
+              <View style={[styles.healthCircle, { backgroundColor: getHealthColor(memoryHealth.averageScore) }]}>
+                <Text style={styles.healthScoreValue}>{memoryHealth.averageScore}</Text>
+                <Text style={styles.healthScoreLabel}>Score</Text>
+              </View>
+            </View>
+
+            <View style={styles.healthStats}>
+              <View style={styles.healthStatRow}>
+                <Text style={styles.healthStatIcon}>💪</Text>
+                <View style={styles.healthStatInfo}>
+                  <Text style={styles.healthStatValue}>{memoryHealth.strongVerses}</Text>
+                  <Text style={styles.healthStatLabel}>Strong Verses</Text>
+                </View>
+              </View>
+              <View style={styles.healthStatRow}>
+                <Text style={styles.healthStatIcon}>📚</Text>
+                <View style={styles.healthStatInfo}>
+                  <Text style={styles.healthStatValue}>{memoryHealth.needsReview}</Text>
+                  <Text style={styles.healthStatLabel}>Needs Review</Text>
+                </View>
+              </View>
+              <View style={styles.healthStatRow}>
+                <Text style={styles.healthStatIcon}>⚠️</Text>
+                <View style={styles.healthStatInfo}>
+                  <Text style={styles.healthStatValue}>{memoryHealth.weakVerses}</Text>
+                  <Text style={styles.healthStatLabel}>Weak Verses</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        </Card.Content>
+      </Card>
+
+      {/* Practice Pattern Card */}
+      <Card style={styles.card}>
+        <Card.Content>
+          <Text style={styles.cardTitle}>Practice Pattern</Text>
+          <View style={styles.patternContainer}>
+            <View style={styles.patternStat}>
+              <Text style={styles.patternValue}>{practicePattern.activeDays}</Text>
+              <Text style={styles.patternLabel}>Active Days (30d)</Text>
+            </View>
+            <View style={styles.patternStat}>
+              <Text style={styles.patternValue}>{practicePattern.avgSessionsPerDay}</Text>
+              <Text style={styles.patternLabel}>Avg Sessions/Day</Text>
+            </View>
+          </View>
+          <View style={styles.consistencyContainer}>
+            <Text style={styles.consistencyLabel}>Consistency Score</Text>
+            <ProgressBar
+              progress={practicePattern.consistencyScore / 100}
+              color="#10b981"
+              style={styles.progressBar}
+            />
+            <Text style={styles.consistencyValue}>{practicePattern.consistencyScore}%</Text>
           </View>
         </Card.Content>
       </Card>
@@ -188,6 +265,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
   card: {
     margin: 16,
@@ -344,6 +427,91 @@ const styles = StyleSheet.create({
   milestoneBar: {
     height: 8,
     borderRadius: 4,
+  },
+  memoryHealthContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  healthScoreContainer: {
+    alignItems: 'center',
+  },
+  healthCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  healthScoreValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  healthScoreLabel: {
+    fontSize: 12,
+    color: '#fff',
+    marginTop: 4,
+  },
+  healthStats: {
+    flex: 1,
+    gap: 12,
+  },
+  healthStatRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  healthStatIcon: {
+    fontSize: 24,
+  },
+  healthStatInfo: {
+    flex: 1,
+  },
+  healthStatValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  healthStatLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  patternContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 20,
+  },
+  patternStat: {
+    alignItems: 'center',
+  },
+  patternValue: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#6366f1',
+  },
+  patternLabel: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 4,
+  },
+  consistencyContainer: {
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  consistencyLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 8,
+  },
+  consistencyValue: {
+    fontSize: 12,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 8,
   },
 });
 
