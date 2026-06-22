@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="812" viewBox="0 0 940 812" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+<rect width="940" height="812" fill="#ffffff"/>
+<text x="470.0" y="54" text-anchor="middle" font-size="24" font-weight="700" fill="#0f172a">Scripture Mastery</text>
+<text x="470.0" y="74" text-anchor="middle" font-size="12" fill="#64748b">System Architecture</text>
+<defs><marker id="arr" markerWidth="10" markerHeight="10" refX="6" refY="3" orient="auto" markerUnits="strokeWidth"><path d="M0,0 L6,3 L0,6 Z" fill="#94a3b8"/></marker></defs>
+<rect x="24" y="88" width="892" height="116" rx="12" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="40" y="112" font-size="13" font-weight="700" fill="#2563eb">Mobile App (Expo / React Native)</text>
+<rect x="44.0" y="128" width="157.6" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="122.8" y="162.0" text-anchor="middle" font-size="12" fill="#1e293b">Home</text>
+<rect x="217.6" y="128" width="157.6" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="296.4" y="162.0" text-anchor="middle" font-size="12" fill="#1e293b">Practice</text>
+<rect x="391.2" y="128" width="157.6" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="470.0" y="162.0" text-anchor="middle" font-size="12" fill="#1e293b">Library</text>
+<rect x="564.8" y="128" width="157.6" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="643.6" y="162.0" text-anchor="middle" font-size="12" fill="#1e293b">Progress</text>
+<rect x="738.4" y="128" width="157.6" height="60" rx="8" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+<text x="817.2" y="162.0" text-anchor="middle" font-size="12" fill="#1e293b">Achievements</text>
+<line x1="470.0" y1="204" x2="470.0" y2="234" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="24" y="234" width="892" height="116" rx="12" fill="#ecfeff" stroke="#0891b2" stroke-width="1.5"/>
+<text x="40" y="258" font-size="13" font-weight="700" fill="#0891b2">Navigation</text>
+<rect x="360.0" y="274" width="220.0" height="60" rx="8" fill="#ffffff" stroke="#0891b2" stroke-width="1.5"/>
+<text x="470.0" y="308.0" text-anchor="middle" font-size="12" fill="#1e293b">React Navigation</text>
+<line x1="470.0" y1="350" x2="470.0" y2="380" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="24" y="380" width="892" height="116" rx="12" fill="#f5f3ff" stroke="#7c3aed" stroke-width="1.5"/>
+<text x="40" y="404" font-size="13" font-weight="700" fill="#7c3aed">State</text>
+<rect x="360.0" y="420" width="220.0" height="60" rx="8" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5"/>
+<text x="470.0" y="454.0" text-anchor="middle" font-size="12" fill="#1e293b">React Context (AppContext)</text>
+<line x1="470.0" y1="496" x2="470.0" y2="526" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="24" y="526" width="892" height="116" rx="12" fill="#ecfdf5" stroke="#059669" stroke-width="1.5"/>
+<text x="40" y="550" font-size="13" font-weight="700" fill="#059669">Domain Services</text>
+<rect x="242.0" y="566" width="220.0" height="60" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+<text x="352.0" y="600.0" text-anchor="middle" font-size="12" fill="#1e293b">Spaced-repetition engine</text>
+<rect x="478.0" y="566" width="220.0" height="60" rx="8" fill="#ffffff" stroke="#059669" stroke-width="1.5"/>
+<text x="588.0" y="600.0" text-anchor="middle" font-size="12" fill="#1e293b">database.js service</text>
+<line x1="470.0" y1="642" x2="470.0" y2="672" stroke="#94a3b8" stroke-width="2" marker-end="url(#arr)"/>
+<rect x="24" y="672" width="892" height="116" rx="12" fill="#fffbeb" stroke="#d97706" stroke-width="1.5"/>
+<text x="40" y="696" font-size="13" font-weight="700" fill="#d97706">Data</text>
+<rect x="360.0" y="712" width="220.0" height="60" rx="8" fill="#ffffff" stroke="#d97706" stroke-width="1.5"/>
+<text x="470.0" y="746.0" text-anchor="middle" font-size="12" fill="#1e293b">SQLite (expo-sqlite)</text>
+</svg>
